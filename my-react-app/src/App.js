@@ -1,8 +1,11 @@
+// Import the necessary React hook and components
 import { useState } from 'react';
 import Movie from './Movie';
 import './App.css';
 
+// Define the main App component
 const App = () => {
+  // Initialize the state for movies using the useState hook
   const [movies, setMovies] = useState([
     {
       id: 1,
@@ -34,45 +37,48 @@ const App = () => {
     }
   ]);
 
+  // Function to add a review to a specific movie
   const addReview = (movieId, review) => {
     setMovies(prevMovies => {
       const updatedMovies = prevMovies.map(movie => {
         if (movie.id === movieId) {
-          return { ...movie, reviews: [...movie.reviews, review] };
+          return { ...movie, reviews: [...movie.reviews, review] }; // Add the new review to the movie's reviews
         }
-        return movie;
+        return movie; // Return the movie unchanged if the IDs don't match
       });
-      return updatedMovies;
+      return updatedMovies; // Return the updated movies array
     });
   };
 
+  // Function to rate a specific movie
   const rateMovie = (movieId, newRating) => {
     setMovies(prevMovies => {
       const updatedMovies = prevMovies.map(movie => {
         if (movie.id === movieId) {
-          return { ...movie, rating: newRating };
+          return { ...movie, rating: newRating }; // Update the movie's rating
         }
-        return movie;
+        return movie; // Return the movie unchanged if the IDs don't match
       });
-      return updatedMovies;
+      return updatedMovies; // Return the updated movies array
     });
   };
 
+  // Render the component
   return (
     <div className="app">
       <h1>Movie Reviews</h1>
       <div className="movies">
         {movies.map(movie => (
           <Movie
-            key={movie.id}
+            key={movie.id} // Unique key for each movie component
             id={movie.id}
             title={movie.title}
             synopsis={movie.synopsis}
             image={movie.image}
             rating={movie.rating}
             reviews={movie.reviews}
-            addReview={addReview} // Pass the addReview function
-            rateMovie={rateMovie} // Pass the rateMovie function
+            addReview={addReview} // Pass the addReview function to the Movie component
+            rateMovie={rateMovie} // Pass the rateMovie function to the Movie component
           />
         ))}
       </div>
@@ -80,5 +86,5 @@ const App = () => {
   );
 };
 
+// Export the App component as the default export
 export default App;
-
