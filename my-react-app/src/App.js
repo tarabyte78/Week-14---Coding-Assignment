@@ -1,90 +1,100 @@
-// Import the necessary React hook and components
-import { useState } from 'react';
-import Movie from './Movie';
+import { useEffect, useState } from 'react';
 import './App.css';
+import MovieList from './MovieList';
+import MovieForm from './MovieForm';
 
-// Define the main App component
-const App = () => {
-  // Initialize the state for movies using the useState hook
-  const [movies, setMovies] = useState([
-    {
-      id: 1,
-      title: "BARBIE",
-      image: "https://posters.movieposterdb.com/23_06/2023/1517268/l_barbie-movie-poster_780f2c78.jpg",
-      synopsis: "Barbie suffers a crisis that leads her to question her world and her existence.",
-      reviews: [
-        { id: 1, author: "John D.", rating: "4 Stars", content: "Great movie!" },
-        { id: 2, author: "Jane S.", rating: "5 Stars", content: "Mind-bending storyline!" }
-      ],
-    },
-    {
-      id: 2,
-      title: "THE DARK KNIGHT",
-      image: "https://posters.movieposterdb.com/08_05/2008/468569/l_468569_f0e2cd63.jpg",
-      synopsis: "When the menace known as The Joker emerges from his mysterious past, he wreaks havoc and chaos on the people of Gotham.",
-      reviews: [
-        { id: 1, author: "Bruce", rating: "2 Stars", content: "The best Batman movie ever!" }
-      ],
-    },
-    {
-      id: 3,
-      title: "THE MANDALORIAN",
-      image: "https://posters.movieposterdb.com/22_10/2019/8111088/l_the-mandalorian-movie-poster_c9aa37f3.jpg",
-      synopsis: "The travels of a lone bounty hunter in the outer reaches of the galaxy, far from the authority of the New Republic.",
-      reviews: [
-        { id: 1, author: "Stanly H.", rating: "4 Stars", content: "Cutest Creature Ever!" }
-      ],
+function App() {
+  const API_URL = 'https://playground.mockoon.com/movies';
+  const [movies, setMovies] = useState([]);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+
+  useEffect(() => {
+    fetchMovies();
+  }, []);
+
+  const fetchMovies = async () => {
+    try {
+      const response = await fetch(API_URL);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setMovies(data);
+    } catch (error) {
+      console.error('Error fetching movies:', error);
     }
-  ]);
-
-  // Function to add a review to a specific movie
-  const addReview = (movieId, review) => {
-    setMovies(prevMovies => {
-      const updatedMovies = prevMovies.map(movie => {
-        if (movie.id === movieId) {
-          return { ...movie, reviews: [...movie.reviews, review] }; // Add the new review to the movie's reviews
-        }
-        return movie; // Return the movie unchanged if the IDs don't match
-      });
-      return updatedMovies; // Return the updated movies array
-    });
   };
 
-  // Function to rate a specific movie
-  const rateMovie = (movieId, newRating) => {
-    setMovies(prevMovies => {
-      const updatedMovies = prevMovies.map(movie => {
-        if (movie.id === movieId) {
-          return { ...movie, rating: newRating }; // Update the movie's rating
-        }
-        return movie; // Return the movie unchanged if the IDs don't match
+  const addMovie = async (movie) => {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(movie),
       });
-      return updatedMovies; // Return the updated movies array
-    });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      fetchMovies();
+    } catch (error) {
+      console.error('Error adding movie:', error);
+    }
   };
 
-  // Render the component
+  const updateMovie = async (movie) => {
+    try {
+      const response = await fetch(`${API_URL}/${movie.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(movie),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      fetchMovies();
+    } catch (error) {
+      console.error('Error updating movie:', error);
+    }
+  };
+
+  const deleteMovie = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      fetchMovies();
+    } catch (error) {
+      console.error('Error deleting movie:', error);
+    }
+  };
+
+  const handleSelectMovie = (movie) => {
+    setSelectedMovie(movie);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedMovie(null);
+  };
+
   return (
-    <div className="app">
-      <h1>Movie Reviews</h1>
-      <div className="movies">
-        {movies.map(movie => (
-          <Movie
-            key={movie.id} // Unique key for each movie component
-            id={movie.id}
-            title={movie.title}
-            synopsis={movie.synopsis}
-            image={movie.image}
-            rating={movie.rating}
-            reviews={movie.reviews}
-            addReview={addReview} // Pass the addReview function to the Movie component
-            rateMovie={rateMovie} // Pass the rateMovie function to the Movie component
-          />
-        ))}
-      </div>
+    <div className="App">
+      <h1>Movie List</h1>
+      <MovieForm 
+        addMovie={addMovie} 
+        updateMovie={updateMovie} 
+        selectedMovie={selectedMovie} 
+        clearSelection={handleClearSelection}
+      />
+      <MovieList 
+        movies={movies} 
+        deleteMovie={deleteMovie} 
+        selectMovie={handleSelectMovie}
+      />
     </div>
   );
-};
+}
 
-// Export the App component as the default export
 export default App;
